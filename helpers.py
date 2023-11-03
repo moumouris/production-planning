@@ -73,9 +73,9 @@ def compute_task_positions(unit_can_process_tasks, task_levels_length):
 def draw_unit_rectangle(x_start, y_start, width, unit):
     width = width + 0.2
     height = 1.2
-    x,y = x_start - 0.6, y_start - 0.6
+    x,y = x_start - 0.6, y_start - 0.9
     rectangle = plt.Rectangle((x,y), width, height, edgecolor='black', facecolor='none', linestyle='--')
-    label  = plt.text(x + width / 2, y + height + 0.1, unit, ha='center', va='top', color='red')
+    label  = plt.text(x + width / 2, y + height + 1.2, unit, ha='center', va='top', color='red')
     return label,rectangle
 
 def generate_materials(material_type, number_of_materials):
