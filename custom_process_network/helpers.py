@@ -1,8 +1,6 @@
 import random
 import matplotlib.pyplot as plt
-
-random.seed(42)
-possible_numbers_of_tasks_in_unit = [2,3,4,5]
+from network_parameters import *
 
 def generate_units(units_in_level):
   units = []
