@@ -1,0 +1,12 @@
+material,capacity,storage cost,onhand inventory
+RM1,80,0.0,80
+RM2,80,0.0,80
+INT1,5,0.0,0
+INT2,5,0.0,0
+INT3,5,0.0,0
+INT4,5,0.0,0
+FP1,10,1.5,0
+FP2,10,1.4,0
+FP3,10,1.8,0
+FP4,10,1.2,0
+FP5,10,2.0,0
