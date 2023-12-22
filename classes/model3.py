@@ -22,10 +22,10 @@ class Model3(Model2):
   
   def _addModelConstraints(self):
     super()._addCapacityConstraint()
-    super()._addAssignmentConstraint()
-    self._addBalanceConstraints()
     super()._addUnmetDemandConstraint()
     self._addShipmentConstraints()
+    super()._addAssignmentConstraint()
+    self._addBalanceConstraints()
 
   def _addBalanceConstraints(self):
     material_produced_by_tasks = self.network['material_produced_by_tasks']
@@ -68,5 +68,5 @@ class Model3(Model2):
     self.m.addConstrs(self.v[k,n] == 0 for k in materials[:rm_num + intm_num] for n in  self.time_points) 
     shipments_for_fp_materials =  \
     self.m.addConstrs(self.v[k,n] == 0 for k in materials[rm_num + intm_num:] for n in  self.time_points\
-      if((n % 7 or n == 0) and n != self.time_points[-1])) 
+      if((n % (7 * (24 / self.parameters['Dt'])) or n == 0) and n != self.time_points[-1])) 
     shipments = self.m.addConstrs(self.v[k,n] == - self.u[k,n] + self.u[k,n-1] - net_delivery[k,n] for k in materials[rm_num + intm_num:] for n in self.time_points[1:])
