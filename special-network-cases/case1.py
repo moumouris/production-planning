@@ -130,14 +130,14 @@ material_parameters = {'material': materials,
                        'onhand inventory': onhand_inventory_list
                       }
 materials_table = pd.DataFrame(material_parameters)
-materials_table.to_csv('data/case1-materials.csv', index=False)
+materials_table.to_csv('data/case1/materials.csv', index=False)
 
 task_parameters = {'task': tasks,
                    'production cost': production_costs 
                   }
 
 tasks_table = pd.DataFrame(task_parameters)
-tasks_table.to_csv('data/case1-tasks.csv', index=False)
+tasks_table.to_csv('data/case1/tasks.csv', index=False)
 
 demand = {}
 for material in materials[rm_num + intm_num:]:
@@ -147,7 +147,7 @@ for material in materials[rm_num + intm_num:]:
 
 demand_table = pd.DataFrame(demand, index=[i for i in range(1, total_weeks + 1)])
 demand_table.index.name = 'week'
-demand_table.to_csv('data/case1-model1-demand.csv')
+demand_table.to_csv('data/case1/model1-demand.csv')
 
 demand = {}
 for material in materials[rm_num + intm_num:]:
@@ -157,4 +157,4 @@ for material in materials[rm_num + intm_num:]:
 
 demand_table = pd.DataFrame(demand, index=[i for i in range(1, total_weeks + 1)])
 demand_table.index.name = 'week'
-demand_table.to_csv('data/case1-model2n3-demand.csv')
+demand_table.to_csv('data/case1/model2n3-demand.csv')
