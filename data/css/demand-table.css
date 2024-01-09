@@ -1,0 +1,23 @@
+table {
+  padding: 50px;
+  background: lightgray;
+
+}
+
+th, td {
+  padding: 5px 10px;
+}
+
+th {
+  text-transform: capitalize;
+  font-size: 18px;
+  /* font-weight: 700; */
+}
+
+tr:first-child {
+  text-transform: capitalize;
+}
+
+tr td:first-child {
+  text-align: center;
+}
