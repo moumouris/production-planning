@@ -12,6 +12,7 @@ def generate_units(units_in_level):
   return units
 
 def generate_tasks(units):
+  random.seed(42)
   tasks = []
   unit_can_process_tasks = {}
   for unit in units:
@@ -26,6 +27,10 @@ def generate_tasks(units):
   return tasks, unit_can_process_tasks
 
 def compute_task_levels_length(unit_can_process_tasks):
+  """
+  Computes length of each task level in the network by counting one unit for each task
+  in the level plus one unit between every 2 units
+  """
   task_levels_length = []
   first_level = '1'
   level = first_level
@@ -46,6 +51,9 @@ def compute_task_levels_length(unit_can_process_tasks):
   return task_levels_length
 
 def compute_task_positions(unit_can_process_tasks, task_levels_length):
+  """
+  Computes task coordinates to be printed in the network
+  """
   max_level_length = max(task_levels_length)
   pos = {}
   first_level = 1
