@@ -1,10 +1,6 @@
 import gurobipy as gp
 from gurobipy import GRB
-# from utils.utils import make_dict_from_lists
-
-def make_dict_from_lists(keys, values):
-  key_value_pairs = zip(keys, values)
-  return dict(key_value_pairs)
+from utils.utils import make_dict_from_lists
 
 class Model1:
   def __init__(self, network, network_parameters, name='production_planning_simple'):

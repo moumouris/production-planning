@@ -22,18 +22,19 @@ class Model2(Model1):
   
   def _addModelConstraints(self):
     super()._addCapacityConstraint()
+    self._addUnmetDemandConstraint()
     super()._addAssignmentConstraint()
     self._addBalanceConstraints()
-    self._addUnmetDemandConstraint()
 
   def _setObjective(self):
     obj = self._calcObjectiveFunction()
     self.m.setObjective(obj, GRB.MINIMIZE)
 
   def _addUnmetDemandConstraint(self):
-    materials                  = self.network['materials']
+    materials = self.network['materials']
     rm_num    = self.parameters['number_of_raw_materials']
-    intm_num    = self.parameters['number_of_intermediate_materials']
+    intm_num  = self.parameters['number_of_intermediate_materials']
+
     unmet_demand_for_rm_n_int_materials = \
     self.m.addConstrs(self.u[k,n] == 0 for k in materials[:rm_num + intm_num] for n in  self.time_points)
     
