@@ -1,9 +1,8 @@
 import networkx as nx
 from helpers import *
-import gurobipy as gp
-from gurobipy import GRB
 import pickle
-import numpy as np
+from gurobipy import GRB
+import pandas as pd
 from utils.utils import calculate_net_delivery
 from classes.model1 import Model1
 from classes.model2 import Model2
@@ -96,11 +95,11 @@ for material in materials_list:
    material_produced_by_tasks[material] = list(G.predecessors(material))
    material_consumed_by_tasks[material] = list(G.successors(material))
 
-Dts = [2, 4, 8, 12, 24]
-weeks = 8
-days = 56
+Dts = [2, 4, 6, 12]
+weeks = 6
+days = 42
 delivery_interval = 7
-time_limit_for_gurobi = 10 #seconds
+time_limit_for_gurobi = 1200 #seconds
 net_delivery_ceiling_model1 = 3
 net_delivery_ceiling_model2n3 = 6 
 
@@ -133,7 +132,7 @@ for Dt in Dts:
       task_production_costs[task] = random.choice(task_possible_production_costs)
 
    #Generate production rates
-   task_possible_daily_production_rates = [2, 2, 1, 3]
+   task_possible_daily_production_rates = [2, 2, 1.5, 3]
    task_daily_production_rates = {}
    task_production_rates = {}
    for task in tasks:
@@ -159,8 +158,8 @@ for Dt in Dts:
          else:
             onhand_inventory[material] = 0
 
-   net_delivery_model1 = calculate_net_delivery(materials_list, num_of_materials_in_each_type['FP'], int(delivery_interval * (24 / Dt)), time_points, ceiling=net_delivery_ceiling_model1)
-   net_delivery_model2n3 = calculate_net_delivery(materials_list, num_of_materials_in_each_type['FP'], int(delivery_interval * (24 / Dt)), time_points, ceiling=net_delivery_ceiling_model2n3)
+   net_delivery_model1 = calculate_net_delivery(materials_list, num_of_materials_in_each_type['FP'], int(delivery_interval * (24 / Dt)), time_points, ceiling=net_delivery_ceiling_model1, lamda = 4)
+   net_delivery_model2n3 = calculate_net_delivery(materials_list, num_of_materials_in_each_type['FP'], int(delivery_interval * (24 / Dt)), time_points, ceiling=net_delivery_ceiling_model2n3, lamda = 4)
    
    network = {}
    network['tasks']                      = tasks
@@ -195,16 +194,80 @@ for Dt in Dts:
    
    models = [model1, model2, model3]
    for i,model in enumerate(models):
-      model.m.setParam('timeLimit', 10)
+      model.m.setParam('timeLimit', time_limit_for_gurobi)
+      print('##################### Dt = ' + str(Dt) + ' #########################')
       model.m.optimize()
       obj = model.m.getObjective()
       obj_value = obj.getValue()
       integrality_gap = model.m.MIPGap
+
+      lp_relaxation_model = model.m.relax()
+      lp_relaxation_model.optimize()
+      lp_obj = lp_relaxation_model.getObjective()
+      lp_obj_value = lp_obj.getValue()
+      min_integrality_gap =  ( obj_value * (1 - integrality_gap) - lp_obj_value ) / ( obj_value * (1 - integrality_gap) )
+      max_integrality_gap = (obj_value - lp_obj_value) / obj_value
       model_name = 'M' + str((i + 1))
-      results[Dt][model_name] = {'objective': obj_value, 'integrality gap': integrality_gap}
+      if model.m.status == GRB.TIME_LIMIT:
+         print("Model was interrupted due to reaching the time limit.")
+         status = "interrupted"
+      else:
+         print("Optimization completed successfully.")
+         status = "successful"
+
+      results[Dt][model_name] = {
+         'objective': obj_value,
+         'integrality gap': integrality_gap * 100, 
+         'status': status,
+         'min integrality gap': min_integrality_gap * 100,
+         'max integrality gap': max_integrality_gap * 100,
+         'lp objective': lp_obj_value
+         }
    
 
 for time_partition in list(results.keys()):
-   print ('######################' + 'Dt: ' + str(time_partition) + '##########################')
+   print ('######################   ' + 'Dt: ' + str(time_partition) + '   ##########################')
    for model_name in list(results[time_partition].keys()):
       print(model_name, results[time_partition][model_name])
+
+
+#################### EXPORT DATA ##############################
+material_parameters = {'material': materials_list, 
+                       'capacity': capacities.values(),
+                       'storage cost': storage_costs.values(),
+                       'onhand inventory': onhand_inventory.values()
+                      }
+materials_table = pd.DataFrame(material_parameters)
+materials_table.to_csv('data/custom-network/materials.csv', index=False)
+
+task_parameters = {'task': tasks,
+                   'production cost': task_production_costs.values() 
+                  }
+
+tasks_table = pd.DataFrame(task_parameters)
+tasks_table.to_csv('data/custom-network/tasks.csv', index=False)
+
+demand = {}
+for material in materials_list[len(materials_list) - num_of_materials_in_each_type['FP']:]:
+  demand[material] = []
+  for n in range(delivery_interval * 2, time_points[-1] + 1, delivery_interval * 2):
+      demand[material].append( -(net_delivery_model1[(material, n)]))
+
+demand_table = pd.DataFrame(demand, index=[i for i in range(1, weeks + 1)])
+demand_table.index.name = 'week'
+demand_table.to_csv('data/custom-network/model1-demand.csv')
+
+demand = {}
+for material in materials_list[len(materials_list) - num_of_materials_in_each_type['FP']:]:
+  demand[material] = []
+  for n in range(2 * delivery_interval, time_points[-1] + 1, 2 * delivery_interval):
+      demand[material].append( -(net_delivery_model2n3[(material, n)]))
+
+demand_table = pd.DataFrame(demand, index=[i for i in range(1, weeks + 1)])
+demand_table.index.name = 'week'
+demand_table.to_csv('data/custom-network/model2n3-demand.csv')
+
+
+
+with open('custom_process_network/results.pkl', 'wb') as file:
+    pickle.dump(results, file)

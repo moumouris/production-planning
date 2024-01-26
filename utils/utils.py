@@ -8,7 +8,7 @@ def make_dict_from_lists(keys, values):
   key_value_pairs = zip(keys, values)
   return dict(key_value_pairs)
 
-def calculate_net_delivery(materials, number_of_final_products, delivery_interval, time_points, ceiling=3):
+def calculate_net_delivery(materials, number_of_final_products, delivery_interval, time_points, ceiling=3, lamda=1):
   np.random.seed(42)
   net_delivery = {}
   for k in materials:
@@ -17,6 +17,6 @@ def calculate_net_delivery(materials, number_of_final_products, delivery_interva
 
   for k in materials[-number_of_final_products:]:
     for n in range(delivery_interval, time_points[-1] + 1, delivery_interval):
-      net_delivery[(k,n)] = - np.ceil(ceiling * np.random.random())
+      net_delivery[(k,n)] = - np.ceil(ceiling * lamda * np.random.random()) / lamda
   
   return net_delivery
