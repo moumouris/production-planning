@@ -1,0 +1,5 @@
+delivery_interval = 7
+planning_horizon = 56
+number_of_raw_materials = 2
+number_of_intermediate_materials = 4
+Dt = 24
