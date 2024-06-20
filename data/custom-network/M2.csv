@@ -1,0 +1,5 @@
+objective,optimality gap,status,min integrality gap,max integrality gap,lp objective,Dt
+801.223,0.003,interrupted,0.004,0.006,796.083,2
+843.256,0.005,interrupted,0.016,0.021,825.334,4
+857.453,0.005,interrupted,0.031,0.036,826.582,6
+898.988,0.008,interrupted,0.076,0.083,824.262,12
