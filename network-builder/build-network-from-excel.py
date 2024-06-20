@@ -5,13 +5,13 @@ import shutil
 
 
 file_name = input('Enter name of your excel file e.g(example.xlsx): ')
-network_data = pd.read_excel('./networkBuilder/' + file_name, header=None)
+network_data = pd.read_excel('./network-builder/' + file_name, header=None)
 network_array = network_data.to_numpy(na_value=False)
 
 directory_name = input('Choose a name for your network files directory: ')
-os.mkdir('./networkBuilder/' + directory_name)
+os.mkdir('./network-builder/' + directory_name)
 
-path =  './networkBuilder/' + directory_name
+path =  './network-builder/' + directory_name
 tasks =  network_array[1][1:]
 task_parameters = {
   'tasks': tasks,
@@ -61,4 +61,4 @@ net_delivery_table = pd.DataFrame(net_delivery_table, index=header)
 net_delivery_table.to_excel(path + '/NetDelivery.xlsx')
 
 destination = path + '/' + file_name
-shutil.copyfile('./networkBuilder/' + file_name, destination)
+shutil.copyfile('./network-builder/' + file_name, destination)
