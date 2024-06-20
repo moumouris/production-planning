@@ -42,7 +42,6 @@ parameters['days_duration'] = parameters['planning_horizon']
 parameters.update(task_parameters)
 parameters.update(material_parameters)
 
-print(parameters)
 model1 = Model1(network, parameters)
 
 model1.m.optimize()
