@@ -96,10 +96,10 @@ for material in materials_list:
    material_consumed_by_tasks[material] = list(G.successors(material))
 
 Dts = [2, 4, 6, 12]
-weeks = 6
-days = 42
+weeks = 8
+days = 56
 delivery_interval = 7
-time_limit_for_gurobi = 1200 #seconds
+time_limit_for_gurobi = 600 #seconds
 net_delivery_ceiling_model1 = 3
 net_delivery_ceiling_model2n3 = 6 
 
@@ -111,6 +111,7 @@ for Dt in Dts:
    time_periods = [i for i in range(1, int(weeks * 24 * 7 / Dt) + 1)]
    time_points = [i for i in range(int(days * (24 / Dt)) + 1)]
 
+   #Generate capacities
    capacities_per_material_type = {
       'RM': 200,
       'INA': 4,
@@ -118,8 +119,6 @@ for Dt in Dts:
       'INC': 4,
       'FP': 12,
    }
-
-   #Generate capacities
    capacities = {}
    for material_type in materials_for_each_type:
       for material in materials_for_each_type[material_type]:
@@ -149,7 +148,7 @@ for Dt in Dts:
          else:
             storage_costs[material] = 0
 
-   #Generate onhand inventory
+   #Generate onhand inventory 200 for raw materials 0 otherwise
    onhand_inventory = {}
    for material_type in materials_for_each_type:
       for material in materials_for_each_type[material_type]:
@@ -199,13 +198,13 @@ for Dt in Dts:
       model.m.optimize()
       obj = model.m.getObjective()
       obj_value = obj.getValue()
-      integrality_gap = model.m.MIPGap
+      optimality_gap = model.m.MIPGap
 
       lp_relaxation_model = model.m.relax()
       lp_relaxation_model.optimize()
       lp_obj = lp_relaxation_model.getObjective()
       lp_obj_value = lp_obj.getValue()
-      min_integrality_gap =  ( obj_value * (1 - integrality_gap) - lp_obj_value ) / ( obj_value * (1 - integrality_gap) )
+      min_integrality_gap =  ( obj_value * (1 - optimality_gap) - lp_obj_value ) / ( obj_value * (1 - optimality_gap) )
       max_integrality_gap = (obj_value - lp_obj_value) / obj_value
       model_name = 'M' + str((i + 1))
       if model.m.status == GRB.TIME_LIMIT:
@@ -217,10 +216,10 @@ for Dt in Dts:
 
       results[Dt][model_name] = {
          'objective': obj_value,
-         'integrality gap': integrality_gap * 100, 
+         'optimality gap': optimality_gap, 
          'status': status,
-         'min integrality gap': min_integrality_gap * 100,
-         'max integrality gap': max_integrality_gap * 100,
+         'min integrality gap': min_integrality_gap,
+         'max integrality gap': max_integrality_gap,
          'lp objective': lp_obj_value
          }
    
@@ -241,7 +240,8 @@ materials_table = pd.DataFrame(material_parameters)
 materials_table.to_csv('data/custom-network/materials.csv', index=False)
 
 task_parameters = {'task': tasks,
-                   'production cost': task_production_costs.values() 
+                   'production cost': task_production_costs.values(),
+                   'production rate': task_production_rates.values(),
                   }
 
 tasks_table = pd.DataFrame(task_parameters)
